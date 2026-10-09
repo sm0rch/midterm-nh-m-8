@@ -15,12 +15,15 @@ st.title("StockInsight")
 st.caption("Nhập mã cổ phiếu. Hệ thống tự lấy dữ liệu cuối ngày, phân tích và tạo báo cáo PDF theo nội dung bạn chọn.")
 with st.form("analysis_request"):
     cols=st.columns(3)
-    ticker=cols[0].text_input("Mã cổ phiếu",value="HPG",help="Ví dụ: HPG, FPT, VNM. Nguồn hiện hỗ trợ cổ phiếu Việt Nam có dữ liệu Yahoo/KBS.")
+    ticker=cols[0].text_input("Mã cổ phiếu",value="FPT",
+        help="Nhập bất kỳ mã nào: HPG, FPT, VNM, SSI, MWG, VHM, TCB, VCB, ACB, BID... Hỗ trợ toàn bộ HOSE/HNX/UPCOM.")
     start=cols[1].date_input("Từ ngày",value=today-timedelta(days=365),max_value=today-timedelta(days=1))
     as_of=cols[2].date_input("Ngày phân tích",value=today,max_value=today)
     mode=st.radio("Độ chi tiết",["Đầy đủ","Tóm tắt"],horizontal=True)
     sections=st.multiselect("Nội dung PDF",list(SECTION_LABELS),default=list(SECTION_LABELS),format_func=SECTION_LABELS.get)
-    target_pb=st.number_input("P/B cơ sở giả định",min_value=0.1,max_value=20.0,value=1.5,step=0.1,help="Giả định của bạn cho kịch bản tham chiếu; không phải mức P/B tối ưu được hệ thống ước lượng.")
+    target_pb=st.number_input("P/B cơ sở giả định",min_value=0.1,max_value=20.0,value=1.5,step=0.1,
+        help="Giả định của bạn cho kịch bản tham chiếu; không phải mức P/B tối ưu được hệ thống ước lượng.")
+    st.caption("💡 Nguồn dữ liệu: vnstock KBS/VCI (ưu tiên) → DNSE LightSpeed (real-time) → Yahoo Finance (dự phòng). Hệ thống tự động chọn nguồn khả dụng.")
     submitted=st.form_submit_button("Phân tích",type="primary")
 if submitted:
     st.session_state.pop("analysis_result",None)

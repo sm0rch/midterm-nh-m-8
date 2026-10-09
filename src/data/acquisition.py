@@ -1,4 +1,4 @@
-"""Acquire and persist source data for application and CLI workflows."""
+"""Acquire and persist source data — hỗ trợ mọi mã cổ phiếu."""
 
 import csv
 from datetime import date, datetime, timedelta
@@ -8,7 +8,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from src.data.providers import (DataSourceError, HPG_REPORTS_URL, VN_TIME,
-                                discover_hpg_reports, download, fetch_daily_prices)
+                                fetch_daily_prices, fetch_realtime_price,
+                                discover_hpg_reports, download)
 from src.data.validate import validate_prices
 
 
@@ -17,7 +18,7 @@ def write_json(path: Path, value: dict | list) -> None:
 
 
 def recent_document_cache(root: Path) -> dict:
-    """Only reuse downloads recorded with a checksum in a run within 24 hours."""
+    """Chỉ tái dùng download đã có checksum trong 24 giờ gần nhất."""
     documents = {}
     cutoff = datetime.now(VN_TIME).timestamp() - timedelta(hours=24).total_seconds()
     for log in sorted((root / "outputs/runs").glob("*/acquisition.json")):
@@ -42,23 +43,34 @@ def acquire(ticker: str, start: date, as_of: date, root: Path, report_limit: int
     run_id = f"{ticker}_{stamp}"
     run_dir = root / "outputs/runs" / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
-    write_json(run_dir / "request.json", {"ticker": ticker, "start": start.isoformat(),
-                                          "as_of": as_of.isoformat(), "mode": "completed_daily",
-                                          "report_limit": report_limit})
+    write_json(run_dir / "request.json", {
+        "ticker": ticker, "start": start.isoformat(),
+        "as_of": as_of.isoformat(), "mode": "completed_daily",
+        "report_limit": report_limit,
+    })
     sources, errors = [], []
-    summary = {"ticker": ticker, "run_id": run_id, "prices": None, "financial_documents": [],
-               "financial_metrics_status": "not_extracted", "errors": errors}
+    summary = {
+        "ticker": ticker, "run_id": run_id,
+        "prices": None, "financial_documents": [],
+        "financial_metrics_status": "not_extracted",
+        "realtime": None,
+        "errors": errors,
+    }
+
+    # ── 1. Lấy giá lịch sử (chain: vnstock KBS → VCI → DNSE → Yahoo) ────────
     try:
         prices = fetch_daily_prices(ticker, start, as_of)
-        source_id = f"YAHOO_{run_id}"
+        source_id = f"{prices['meta'].get('source', 'PRICE').upper()}_{run_id}"
         raw_path = root / "data/raw/prices" / f"{run_id}.json"
         raw_path.parent.mkdir(parents=True, exist_ok=True)
         raw_path.write_bytes(prices["raw"])
         validation = validate_prices(prices["rows"], ticker, start, date.fromisoformat(prices["cutoff"]))
         write_json(run_dir / "validation.json", validation)
-        sources.append({"source_id": source_id, "url_or_file": prices["url"],
-                        "retrieved_at": prices["retrieved_at"], "page_or_table": "chart.indicators.quote",
-                        "notes": f"Raw snapshot: {raw_path.relative_to(root).as_posix()}; VND; adjustment basis unverified"})
+        sources.append({
+            "source_id": source_id, "url_or_file": prices["url"],
+            "retrieved_at": prices["retrieved_at"], "page_or_table": "chart.ohlcv",
+            "notes": f"Raw snapshot: {raw_path.relative_to(root).as_posix()}; VND; basis={prices['meta'].get('source','unknown')}",
+        })
         if not validation["valid"]:
             raise DataSourceError(f"Daily price validation failed: {validation['errors'][:5]}")
         output = root / "data/processed" / f"{run_id}_prices.csv"
@@ -67,12 +79,36 @@ def acquire(ticker: str, start: date, as_of: date, root: Path, report_limit: int
             writer = csv.DictWriter(stream, fieldnames=list(prices["rows"][0]) + ["source_id"])
             writer.writeheader()
             writer.writerows({**row, "source_id": source_id} for row in prices["rows"])
-        summary["prices"] = {"row_count": len(prices["rows"]), "first": prices["rows"][0]["date"],
-                             "last": prices["rows"][-1]["date"], "last_close_vnd": prices["rows"][-1]["close"],
-                             "cutoff": prices["cutoff"], "csv": output.relative_to(root).as_posix(),
-                             "company_name": prices["meta"].get("longName"), "validation": validation}
+        summary["prices"] = {
+            "row_count": len(prices["rows"]),
+            "first": prices["rows"][0]["date"],
+            "last": prices["rows"][-1]["date"],
+            "last_close_vnd": prices["rows"][-1]["close"],
+            "cutoff": prices["cutoff"],
+            "csv": output.relative_to(root).as_posix(),
+            "company_name": prices["meta"].get("longName", ticker),
+            "data_source": prices["meta"].get("source", "unknown"),
+            "validation": validation,
+        }
     except (DataSourceError, ValueError) as exc:
         errors.append({"stage": "prices", "message": str(exc)})
+
+    # ── 2. Lấy giá real-time (VCI) ────────────────────────────────────────────
+    try:
+        rt = fetch_realtime_price(ticker)
+        if rt:
+            summary["realtime"] = rt
+            sources.append({
+                "source_id": f"VCI_REALTIME_{run_id}",
+                "url_or_file": f"vnstock://VCI/company/overview/{ticker}",
+                "retrieved_at": datetime.now(VN_TIME).isoformat(),
+                "page_or_table": "company.overview",
+                "notes": "Real-time price, target price, rating từ VCI qua vnstock",
+            })
+    except Exception as exc:
+        errors.append({"stage": "realtime", "message": str(exc)})
+
+    # ── 3. Lấy báo cáo PDF (chỉ HPG có trang công bố riêng) ──────────────────
     if ticker == "HPG" and report_limit:
         try:
             cached_documents = recent_document_cache(root)
@@ -103,19 +139,25 @@ def acquire(ticker: str, start: date, as_of: date, root: Path, report_limit: int
                     if retrieval_mode == "downloaded":
                         target.write_bytes(content)
                     source_id = f"HPG_{hashlib.sha256(content).hexdigest()[:16]}"
-                    summary["financial_documents"].append({**report, "file": target.relative_to(root).as_posix(),
-                                                           "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest(),
-                                                           "source_id": source_id, "retrieval_mode": retrieval_mode,
-                                                           "downloaded_at": cached["downloaded_at"] if retrieval_mode != "downloaded" else datetime.now(VN_TIME).isoformat()})
-                    sources.append({"source_id": source_id, "url_or_file": report["url"] if retrieval_mode == "downloaded" else target.relative_to(root).as_posix(),
-                                    "retrieved_at": datetime.now(VN_TIME).isoformat(), "page_or_table": "whole PDF; metrics not extracted",
-                                    "notes": f"{report['title']}; published_at={report['published_at']}; mode={retrieval_mode}; source_url={report['url']}; listing={HPG_REPORTS_URL}"})
+                    summary["financial_documents"].append({
+                        **report, "file": target.relative_to(root).as_posix(),
+                        "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest(),
+                        "source_id": source_id, "retrieval_mode": retrieval_mode,
+                        "downloaded_at": cached["downloaded_at"] if retrieval_mode != "downloaded" else datetime.now(VN_TIME).isoformat(),
+                    })
+                    sources.append({
+                        "source_id": source_id,
+                        "url_or_file": report["url"] if retrieval_mode == "downloaded" else target.relative_to(root).as_posix(),
+                        "retrieved_at": datetime.now(VN_TIME).isoformat(),
+                        "page_or_table": "whole PDF; metrics not extracted",
+                        "notes": f"{report['title']}; published_at={report['published_at']}; mode={retrieval_mode}",
+                    })
                 except DataSourceError as exc:
                     errors.append({"stage": "financial_document", "url": report["url"], "message": str(exc)})
         except DataSourceError as exc:
             errors.append({"stage": "financial_listing", "message": str(exc)})
-    elif ticker != "HPG":
-        summary["financial_metrics_status"] = "issuer_provider_not_implemented_for_this_ticker"
+
+    # ── Registry ──────────────────────────────────────────────────────────────
     registry = root / "data/metadata/source_registry.csv"
     registry.parent.mkdir(parents=True, exist_ok=True)
     needs_header = not registry.exists() or not registry.stat().st_size
@@ -127,4 +169,3 @@ def acquire(ticker: str, start: date, as_of: date, root: Path, report_limit: int
     write_json(run_dir / "acquisition.json", summary)
     write_json(run_dir / "sources.json", sources)
     return summary
-
