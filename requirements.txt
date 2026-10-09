@@ -1,3 +1,4 @@
+--extra-index-url https://vnstocks.com/api/simple
 streamlit
 pandas
 numpy
