@@ -1,7 +1,38 @@
 """Rules produce observations, implications and follow-up conditions, not buy/sell labels."""
+import os
+import google.generativeai as genai
+from dotenv import load_dotenv
 
+# Load env variables for Gemini
+load_dotenv()
+if os.environ.get("GEMINI_API_KEY"):
+    genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-def build_conclusion(financial, market, valuation, quote_check, interim=None):
+def get_ai_macro_industry_analysis(ticker, company):
+    if not os.environ.get("GEMINI_API_KEY"):
+        return {"macro": "Chưa cấu hình API Key Gemini", "industry": "Chưa cấu hình API Key Gemini"}
+    
+    sector = company.get("sector", "")
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        prompt = f"""
+Bạn là chuyên gia phân tích chứng khoán. Viết một đánh giá ngắn gọn gọn (khoảng 3-4 câu mỗi phần) về:
+1. Tổng quan Kinh tế Vĩ mô (Macroeconomic) Việt Nam hiện tại.
+2. Phân tích Ngành (Industry) đối với nhóm ngành {sector} của cổ phiếu {ticker}.
+
+Trả về kết quả dưới định dạng JSON chính xác như sau:
+{{
+    "macro": "nhận xét vĩ mô...",
+    "industry": "nhận xét ngành..."
+}}
+"""
+        response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+        import json
+        return json.loads(response.text)
+    except Exception as e:
+        return {"macro": f"Lỗi phân tích AI: {e}", "industry": f"Lỗi phân tích AI: {e}"}
+
+def build_conclusion(financial, market, valuation, quote_check, interim=None, company=None):
     opportunities, risks = [], []
     metrics={m["key"]:m for m in financial["metrics"]}
     def value(key):return metrics.get(key,{}).get("value")
@@ -34,5 +65,12 @@ def build_conclusion(financial, market, valuation, quote_check, interim=None):
     risks.append("Các tỷ số năm phản ánh kỳ đã công bố, có thể khác tình hình hiện tại. Kịch bản P/B nhạy với giả định và không tự động dẫn đến quyết định mua/bán.")
     if not opportunities:
         opportunities.append("Chưa đủ bằng chứng để kết luận cơ hội nổi bật; cần bổ sung hoặc xác minh dữ liệu.")
+        
+    ai_analysis = {"macro": "Không có thông tin AI", "industry": "Không có thông tin AI"}
+    if company:
+        ai_analysis = get_ai_macro_industry_analysis(company.get("short_name", ""), company)
+        
     return {"opportunities":opportunities,"risks":risks,
+            "macro": ai_analysis["macro"],
+            "industry": ai_analysis["industry"],
             "summary":"Đánh giá dựa trên tăng trưởng, dòng tiền, xu hướng giá và giả định định giá; xem từng luận điểm cùng nguồn và giới hạn dữ liệu."}

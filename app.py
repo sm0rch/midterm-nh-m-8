@@ -78,7 +78,7 @@ if result:
             st.info(val["assumption"])
         else:st.info(val["reason"])
     with tabs[2]:
-        st.write("**Cơ hội / điều kiện theo dõi**")
+        st.write("**Tổng quan Vĩ mô (AI Generated)**"); st.write(result["conclusion"].get("macro", "")); st.write("**Phân tích Ngành (AI Generated)**"); st.write(result["conclusion"].get("industry", "")); st.write("**Cơ hội / điều kiện theo dõi**")
         for item in result["conclusion"]["opportunities"]:st.write("• "+item)
         st.write("**Rủi ro**")
         for item in result["conclusion"]["risks"]:st.write("• "+item)

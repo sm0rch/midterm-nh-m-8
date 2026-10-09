@@ -97,7 +97,7 @@ def run_analysis(ticker: str, start: date, as_of: date, root: Path | None = None
     }
 
     valuation = analyze_valuation(financial, market, company, research["quote_check"], as_of, target_pb)
-    conclusion = build_conclusion(financial, market, valuation, research["quote_check"], interim)
+    conclusion = build_conclusion(financial, market, valuation, research["quote_check"], interim, company)
 
     # ── 6. Kết quả tổng hợp ──────────────────────────────────────────────────
     import json as _json

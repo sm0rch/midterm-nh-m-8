@@ -84,6 +84,10 @@ def generate_report(result: dict, path: Path | None=None) -> Path:
         limit=1000 if full else 500
         text(business if len(business)<=limit else business[:limit].rsplit(" ",1)[0]+"… (mô tả rút gọn từ nguồn)")
         for item in result["conclusion"]["opportunities"][:(8 if full else 3)]:text("• "+item)
+    if "macro_industry" in selected:
+        heading(SECTION_LABELS["macro_industry"])
+        text("Vĩ mô: " + result["conclusion"].get("macro", "Chưa có thông tin"))
+        text("Ngành: " + result["conclusion"].get("industry", "Chưa có thông tin"))
     if "market" in selected:
         heading(SECTION_LABELS["market"]);market=result.get("market")
         if market:
