@@ -1,0 +1,485 @@
+Mình đã đọc toàn bộ đề trong 261BFF401101_Dethigiuaky.pdf.
+
+**Hướng làm tối ưu là xây dựng một ứng dụng phân tích cổ phiếu có giao diện đơn giản, dữ liệu kiểm chứng được và tự động xuất PDF theo lựa chọn người dùng.** Ưu tiên hoàn thiện một quy trình chạy xuyên suốt trước, rồi mới bổ sung định giá nâng cao hoặc AI.
+
+Đề ghi hạn nộp **11h30 ngày 09/10/2026**. Vì vậy, mình đề xuất cấu trúc đủ rõ để phát triển tiếp, nhưng phạm vi triển khai ban đầu phải gọn và có thể trình diễn ngay.
+
+**1. Hiểu đúng đề: nhóm cần tạo ra sản phẩm gì?**
+
+| Nội dung trong đề | Ý nghĩa khi triển khai | Bằng chứng nên có khi nộp |
+|---|---|---|
+| Thiết kế hệ thống | Có đầu vào, quy trình xử lý, đầu ra và kiến trúc rõ ràng | Sơ đồ hệ thống, mô tả các mô-đun |
+| Xây dựng hệ thống | Có chương trình thực tế | Mã nguồn, hướng dẫn chạy |
+| Vận hành hệ thống | Có thể chạy phân tích khi người dùng yêu cầu | Demo trực tiếp hoặc video |
+| Phân tích cơ hội đầu tư | Phải diễn giải số liệu thành luận điểm về cơ hội và rủi ro | Nhận định có căn cứ |
+| Cổ phiếu bất kỳ | Mã cổ phiếu là đầu vào, không viết cố định toàn bộ cho một doanh nghiệp | Thử đổi mã và chạy lại |
+| Tự động xuất PDF | Báo cáo được tạo từ kết quả xử lý | Nút tạo và tải PDF |
+| Theo nhu cầu người dùng | Người dùng chọn được phạm vi báo cáo | Chọn mã, thời điểm, nội dung, mức độ chi tiết |
+| Chính xác dữ liệu | Có nguồn, đơn vị, kỳ báo cáo và kiểm tra | Bảng nguồn và kết quả kiểm tra |
+| Đánh giá thích hợp | Phương pháp phù hợp với doanh nghiệp và dữ liệu | Giải thích công thức, giả định và giới hạn |
+| Sáng tạo | Có một điểm khác biệt hữu ích | Ví dụ: truy vết số liệu, so sánh kịch bản |
+
+**Lưu ý:** đề liệt kê các nguồn “có thể khai thác”, không quy định số lượng nguồn tối thiểu, không bắt buộc DCF, AI, mô hình dự báo giá hay triển khai lên Internet. Đây là những phần nhóm có thể chọn theo thời gian và năng lực.
+
+Tuy nhiên, mình khuyên nên có đủ **giá giao dịch, tài chính doanh nghiệp và thông tin doanh nghiệp**, vì ba nhóm này giúp báo cáo có cơ sở hơn.
+
+**2. Phạm vi sản phẩm mình đề xuất**
+
+Tên sản phẩm có thể là **StockInsight — Hệ thống phân tích cơ hội đầu tư cổ phiếu Việt Nam**.
+
+Luồng sử dụng:
+
+1. Người dùng nhập hoặc chọn mã cổ phiếu.
+2. Chọn ngày phân tích và khoảng dữ liệu.
+3. Chọn báo cáo ngắn hoặc đầy đủ.
+4. Chọn các phần muốn đưa vào PDF.
+5. Bấm **“Phân tích”**.
+6. Xem kết quả và tình trạng dữ liệu.
+7. Bấm **“Tạo và tải PDF”**.
+
+Các lựa chọn nên có:
+
+| Đầu vào | Đề xuất |
+|---|---|
+| Mã cổ phiếu | Danh sách mã mà hệ thống thực sự có dữ liệu |
+| Ngày phân tích | Mặc định ngày hiện tại; cho phép đổi |
+| Giai đoạn giá | 6 tháng, 1 năm, 3 năm |
+| Giai đoạn tài chính | Các kỳ đã công bố mà nguồn cung cấp |
+| Nội dung báo cáo | Tổng quan, giá, tài chính, định giá, tin tức, rủi ro |
+| Độ dài | Tóm tắt hoặc đầy đủ |
+| Giả định định giá | Cho phép sửa nếu bật phần định giá |
+
+**Cách xử lý yêu cầu “cổ phiếu bất kỳ”:** thiết kế hệ thống nhận mã làm tham số; trước tiên kiểm chứng trên một mã, sau đó thử ít nhất hai mã khác. Không chỉ thay tên doanh nghiệp trong một báo cáo viết sẵn.
+
+Ngân hàng, chứng khoán và doanh nghiệp phi tài chính cần bộ chỉ tiêu khác nhau. Nếu chưa triển khai đủ, hệ thống phải hiển thị phạm vi hỗ trợ; không áp cùng một công thức cho mọi ngành.
+
+**3. Kiến trúc nên dùng**
+
+Mình đề xuất **Python + Streamlit + pandas + ReportLab**, dữ liệu lưu bằng CSV/Parquet và JSON. Cấu trúc này phù hợp với một bài nhóm cần giao diện, tính toán và xuất báo cáo trong thời gian ngắn.
+
+| Thành phần | Công cụ | Vai trò |
+|---|---|---|
+| Giao diện | Streamlit | Nhập yêu cầu, xem kết quả, tải PDF |
+| Chuẩn hóa và tính toán | pandas, numpy | Làm sạch dữ liệu, tính chỉ tiêu |
+| Biểu đồ | matplotlib | Tạo hình dùng chung cho giao diện và PDF |
+| Xuất PDF | ReportLab | Dàn trang, bảng, biểu đồ, nguồn |
+| Cấu hình | YAML hoặc JSON | Quy tắc, giả định, nguồn dữ liệu |
+| Lưu trữ | CSV/Parquet + JSON | Dữ liệu và kết quả mỗi lần chạy |
+
+Streamlit có cơ chế lưu đệm dữ liệu và nút tải file; ReportLab hỗ trợ font TrueType Unicode, phù hợp cho báo cáo tiếng Việt khi nhúng font đầy đủ. [Streamlit Docs](https://docs.streamlit.io/develop/api-reference/widgets/st.download_button?utm_source=chatgpt.com)
+
+Luồng xử lý:
+
+```mermaid
+flowchart TD
+    A["Yêu cầu người dùng"] --> B["Đọc dữ liệu và nguồn"]
+    B --> C["Chuẩn hóa và kiểm tra"]
+    C --> D{"Dữ liệu đủ điều kiện?"}
+    D -->|"Đủ"| E["Tính toán và phân tích"]
+    D -->|"Thiếu hoặc lỗi"| F["Thông báo và giới hạn nội dung"]
+    F --> E
+    E --> G["Kết quả phân tích thống nhất"]
+    G --> H["Hiển thị giao diện"]
+    G --> I["Tạo báo cáo PDF"]
+```
+
+**Điểm quan trọng:** giao diện và PDF phải lấy từ **cùng một kết quả phân tích**. Nếu hai phần tính toán riêng, rất dễ xuất hiện tình trạng số trên màn hình khác số trong báo cáo.
+
+**4. Dữ liệu: phần cần ưu tiên nhất**
+
+Mỗi con số cần trả lời được:
+
+- Lấy từ nguồn nào?
+- Thuộc kỳ nào?
+- Đơn vị gì?
+- Được công bố khi nào?
+- Được hệ thống thu thập lúc nào?
+
+Mình đề xuất chuẩn dữ liệu như sau:
+
+| Bộ dữ liệu | Trường chính |
+|---|---|
+| Giá | `ticker`, `date`, `open`, `high`, `low`, `close`, `volume`, `price_basis`, `source_id` |
+| Tài chính | `ticker`, `period_end`, `period_type`, `statement_scope`, `metric`, `value`, `unit`, `published_at`, `source_id` |
+| Tin tức | `ticker`, `title`, `published_at`, `url`, `source_id`, `summary` |
+| Nguồn | `source_id`, `url_or_file`, `retrieved_at`, `page_or_table`, `notes` |
+
+Trong đó:
+
+- `price_basis`: giá điều chỉnh hay chưa điều chỉnh.
+- `statement_scope`: báo cáo hợp nhất hay riêng lẻ.
+- `period_type`: quý độc lập, lũy kế hoặc năm.
+- `published_at`: thời điểm thông tin đã được công bố.
+
+**Quy tắc bắt buộc nên đặt trong hệ thống:**
+
+| Tình huống | Cách xử lý |
+|---|---|
+| Giá nguồn ghi theo nghìn đồng | Quy đổi thống nhất về đồng/cổ phiếu |
+| Tài chính nguồn ghi theo triệu đồng | Chuẩn hóa và ghi rõ đơn vị đầu ra |
+| Thiếu số liệu | Để thiếu và thông báo; không tự thay bằng 0 |
+| Trộn hợp nhất và riêng lẻ | Chặn tính toán hoặc yêu cầu chọn lại |
+| Quý lũy kế | Chuyển thành quý độc lập trước khi cộng TTM |
+| Mẫu số bằng 0 | Trả “không xác định”, không làm ứng dụng lỗi |
+| Lợi nhuận âm | Không dùng P/E để đưa kết luận thông thường |
+| Nguồn truy cập lỗi | Dùng bản dữ liệu đã lưu và ghi rõ thời điểm |
+| Phân tích tại một ngày quá khứ | Chỉ dùng thông tin đã công bố trước hoặc vào ngày đó |
+
+Ví dụ quan trọng: báo cáo kết thúc ngày 30/06 nhưng công bố ngày 25/07 **không được dùng** cho phân tích tại ngày 10/07.
+
+Với giá giao dịch, phải ghi rõ đang dùng **giá cuối phiên gần nhất hay dữ liệu trong phiên**. Với lợi suất, cần ghi cơ sở điều chỉnh và cách xử lý cổ tức.
+
+**Về repository tham khảo trong đề**
+
+Mình đã kiểm tra [vn-annual-report-miner](https://github.com/Tumiqa/vn-annual-report-miner). Theo README, dự án có các chức năng khai thác báo cáo thường niên, dữ liệu tài chính và tin tức, cùng giao diện và lệnh chạy. Có thể tận dụng phần thu thập dữ liệu, nhưng vẫn cần xây lớp phân tích cơ hội đầu tư và xuất PDF riêng. Đây là mô tả từ README, chưa phải xác nhận mình đã vận hành thành công các chức năng đó. [GitHub](https://github.com/Tumiqa/vn-annual-report-miner?utm_source=chatgpt.com)
+
+Nên thử lấy dữ liệu cho **một mã và một kỳ** trước. Kiểm tra kết quả thực tế rồi mới tích hợp, tránh dành phần lớn thời gian cài toàn bộ chức năng mà chưa có báo cáo chạy được.
+
+**5. Nội dung phân tích nên có gì?**
+
+Mình đề xuất năm phần, theo thứ tự ưu tiên.
+
+**a. Tổng quan doanh nghiệp**
+
+Hiển thị:
+
+- Mã, tên, ngành.
+- Hoạt động kinh doanh chính.
+- Ngày phân tích.
+- Giá tham chiếu và thời điểm giá.
+- Kỳ tài chính mới nhất đã dùng.
+
+Đây cũng là nơi xác định doanh nghiệp thuộc nhóm nào để chọn bộ chỉ tiêu thích hợp.
+
+**b. Phân tích giá và giao dịch**
+
+Bản đầu chỉ cần:
+
+- Biểu đồ giá.
+- Khối lượng giao dịch.
+- Lợi suất theo khoảng thời gian.
+- MA20 và MA50 nếu có đủ số phiên.
+- Mức sụt giảm lớn nhất trong giai đoạn lựa chọn.
+
+Nhận định phải gắn với quan sát, chẳng hạn:
+
+> Giá cao hơn MA20 và MA50 cho thấy xu hướng ngắn hạn đang tích cực; cần đối chiếu với thanh khoản và định giá.
+
+Đây là nhận xét về xu hướng, không đủ để tự động kết luận nên mua.
+
+**c. Phân tích tài chính**
+
+Với doanh nghiệp phi tài chính, ưu tiên:
+
+| Nhóm | Chỉ tiêu |
+|---|---|
+| Tăng trưởng | Doanh thu, lợi nhuận so với cùng kỳ |
+| Sinh lời | Biên lợi nhuận, ROE |
+| Đòn bẩy | Nợ vay/vốn chủ sở hữu |
+| Dòng tiền | CFO, CFO/lợi nhuận |
+| Định giá thị trường | P/E, P/B nếu dữ liệu phù hợp |
+
+Một số công thức và điều kiện cần thống nhất:
+
+\[
+Tăng\ trưởng\ doanh\ thu
+=\frac{Doanh\ thu_t}{Doanh\ thu_{t-1}}-1
+\]
+
+Chỉ diễn giải tỷ lệ tăng trưởng thông thường khi kỳ gốc phù hợp. Nếu kỳ gốc bằng 0 hoặc lợi nhuận chuyển từ âm sang dương, nên mô tả sự thay đổi thay vì đưa tỷ lệ gây hiểu nhầm.
+
+\[
+ROE=\frac{LNST\ thuộc\ cổ\ đông\ công\ ty\ mẹ}
+{VCSH\ thuộc\ cổ\ đông\ công\ ty\ mẹ\ bình\ quân}
+\]
+
+Nếu chỉ tính ROE của một quý, phải ghi rõ; muốn dùng chỉ tiêu năm nên tính theo năm hoặc TTM với dữ liệu tương ứng.
+
+\[
+P/E=\frac{Giá\ cổ\ phiếu}{EPS_{TTM}}
+\]
+
+EPS cần thống nhất kỳ và cơ sở điều chỉnh cổ phiếu. Không mặc định lấy lợi nhuận năm chia cho số cổ phiếu hiện tại mà bỏ qua thay đổi số lượng cổ phiếu.
+
+Với TTM, có thể dùng:
+
+\[
+TTM=Giá\ trị\ cả\ năm\ trước
++Lũy\ kế\ năm\ hiện\ tại
+-Lũy\ kế\ cùng\ kỳ\ năm\ trước
+\]
+
+Công thức này áp dụng cho các chỉ tiêu dòng như doanh thu, lợi nhuận, CFO; **không cộng TTM cho tài sản hoặc vốn chủ sở hữu**.
+
+**d. Định giá**
+
+Để kịp hạn, mình đề xuất hai mức:
+
+| Mức | Cách làm |
+|---|---|
+| Bản đầu | P/E hoặc P/B phù hợp, đối chiếu lịch sử hoặc nhóm so sánh có dữ liệu |
+| Mở rộng | Định giá theo ba kịch bản; bổ sung DCF khi giả định và dữ liệu đã sẵn sàng |
+
+Nếu dùng P/E:
+
+\[
+Giá\ trị\ tham\ chiếu=EPS_{dự\ phóng}\times P/E_{mục\ tiêu}
+\]
+
+Phải công bố rõ:
+
+- EPS dự phóng được xây dựng thế nào.
+- P/E mục tiêu lấy từ đâu.
+- Khoảng thời gian mục tiêu.
+- Vì sao nhóm so sánh phù hợp.
+
+Nếu người dùng nhập P/E mục tiêu, kết quả nên ghi **“giá trị theo giả định người dùng”**.
+
+**Không nên thêm DCF chỉ để tăng số lượng mô hình.** DCF cần kiểm soát dự báo dòng tiền, chi phí vốn, tăng trưởng dài hạn, nợ, tiền và số cổ phiếu. Một mô hình đơn giản, giải thích được sẽ tốt hơn một DCF thiếu cơ sở.
+
+**e. Tin tức, cơ hội và rủi ro**
+
+Mỗi tin nên có ngày, nguồn, nội dung và tác động có thể xảy ra.
+
+| Sự kiện | Cách phân tích |
+|---|---|
+| Hợp đồng mới | Quy mô, thời gian triển khai, khả năng ghi nhận doanh thu |
+| Mở rộng đầu tư | Tiềm năng tăng trưởng và nhu cầu vốn |
+| Lợi nhuận tăng | Tăng từ kinh doanh cốt lõi hay khoản bất thường |
+| Phát hành cổ phiếu | Tác động đến vốn, số cổ phiếu và EPS |
+| Rủi ro pháp lý | Trạng thái đã xác nhận và mức độ ảnh hưởng |
+
+Kết luận nên nối ba yếu tố:
+
+> **Dữ kiện → tác động → điều kiện cần theo dõi.**
+
+Ví dụ: doanh thu tăng nhưng CFO yếu thì cần xem xét khoản phải thu và vốn lưu động, thay vì chỉ viết “doanh nghiệp tăng trưởng tốt”.
+
+**6. Cách tạo nhận định tự động đáng tin cậy**
+
+Ở bản đầu, nên dùng **quy tắc rõ ràng + mẫu câu**, dễ kiểm tra hơn và không phụ thuộc API AI.
+
+Ví dụ:
+
+| Điều kiện | Nhận định tự động |
+|---|---|
+| Doanh thu và lợi nhuận cùng tăng | Hoạt động kinh doanh tăng trưởng trong kỳ |
+| Lợi nhuận tăng nhưng CFO âm | Cần xem xét chất lượng lợi nhuận và biến động vốn lưu động |
+| Nợ vay tăng nhanh | Áp lực tài chính có thể gia tăng |
+| Thiếu EPS phù hợp | Chưa đủ dữ liệu để tính P/E |
+| Giá trị kịch bản biến động mạnh | Kết quả nhạy với giả định định giá |
+
+Không nên đặt quy tắc kiểu **“P/E dưới 15 là mua”** cho mọi doanh nghiệp.
+
+Nếu bổ sung AI, nên để AI diễn đạt từ kết quả đã tính, kèm nguồn. Các con số và công thức vẫn do chương trình xử lý.
+
+**Điểm sáng tạo mình ưu tiên là “truy vết số liệu”:** mỗi chỉ tiêu có thể xem nguồn, kỳ, đơn vị và công thức. Tính năng này trực tiếp phục vụ yêu cầu chính xác của đề.
+
+Điểm sáng tạo thứ hai là **ba kịch bản định giá**, nếu còn thời gian.
+
+**7. PDF nên trình bày như thế nào?**
+
+Bản đầy đủ có thể khoảng **5–7 trang**, tùy lượng dữ liệu; đây là đề xuất, không phải số trang đề bắt buộc.
+
+| Phần | Nội dung |
+|---|---|
+| Tóm tắt | Doanh nghiệp, ngày phân tích, kết luận, cơ hội và rủi ro chính |
+| Giá và giao dịch | Biểu đồ, lợi suất, thanh khoản, nhận xét |
+| Tài chính | Bảng chỉ tiêu, biểu đồ, diễn giải |
+| Định giá | Phương pháp, giả định, kết quả hoặc lý do chưa đủ dữ liệu |
+| Tin tức và rủi ro | Sự kiện có nguồn, tác động, điều kiện theo dõi |
+| Phương pháp và nguồn | Công thức, kỳ dữ liệu, nguồn, giới hạn |
+
+Người dùng chọn bản tóm tắt thì chỉ xuất các phần cần thiết. Nếu bỏ phần tin tức, PDF phải thực sự bỏ phần đó.
+
+Nên tự động thêm:
+
+- Mã báo cáo và thời gian tạo.
+- Số trang.
+- Đơn vị trên bảng và biểu đồ.
+- Nguồn gần nội dung tương ứng.
+- Ngày giá và kỳ tài chính.
+- Giả định do người dùng sửa.
+- Ghi chú về dữ liệu thiếu hoặc chưa cập nhật.
+
+**8. Cây thư mục đề xuất**
+
+Cấu trúc dưới đây là **đề xuất để triển khai**, chưa phải thư mục mình đã tạo:
+
+```text
+stock-investment-system/
+    README.md
+    requirements.txt
+    app.py
+
+    config/
+        settings.yaml
+        analysis_rules.yaml
+        valuation_assumptions.yaml
+
+    src/
+        __init__.py
+        models.py
+        pipeline.py
+
+        data/
+            __init__.py
+            providers.py
+            loaders.py
+            normalize.py
+            validate.py
+
+        analysis/
+            __init__.py
+            market.py
+            financial.py
+            valuation.py
+            news.py
+            conclusion.py
+
+        reporting/
+            __init__.py
+            charts.py
+            sections.py
+            pdf_exporter.py
+
+    assets/
+        fonts/
+            NotoSans-Regular.ttf
+            NotoSans-Bold.ttf
+        logo.png
+
+    data/
+        raw/
+            prices/
+            financials/
+            news/
+            documents/
+        processed/
+        metadata/
+            source_registry.csv
+
+    outputs/
+        runs/
+            FPT_YYYYMMDD_HHMMSS/
+                request.json
+                validation.json
+                analysis.json
+                figures/
+                report.pdf
+
+    tests/
+        fixtures/
+        test_normalize.py
+        test_financial.py
+        test_pipeline.py
+
+    docs/
+        architecture.md
+        methodology.md
+        data_dictionary.md
+        demo_script.md
+
+    submission/
+        sample_report.pdf
+        presentation.pdf
+        demo.mp4
+```
+
+Tên `FPT` trong cây là ví dụ về mã đầu vào.
+
+Các file quan trọng nhất:
+
+| File/thư mục | Nhiệm vụ |
+|---|---|
+| `app.py` | Giao diện và thao tác người dùng |
+| `models.py` | Cấu trúc yêu cầu, dữ liệu và kết quả |
+| `pipeline.py` | Điều phối toàn bộ quy trình |
+| `providers.py` | Kết nối nguồn dữ liệu; có thể tích hợp repository tham khảo |
+| `loaders.py` | Đọc dữ liệu đã lưu hoặc file người dùng cung cấp |
+| `normalize.py` | Chuẩn hóa tên trường, đơn vị, ngày, kỳ |
+| `validate.py` | Phát hiện dữ liệu sai, thiếu hoặc không tương thích |
+| `financial.py` | Tính chỉ tiêu tài chính |
+| `valuation.py` | Tính định giá và kịch bản |
+| `conclusion.py` | Tạo nhận định từ kết quả |
+| `pdf_exporter.py` | Tạo PDF từ kết quả phân tích |
+| `source_registry.csv` | Danh mục nguồn để truy vết |
+| `outputs/runs/` | Lưu lại mỗi lần chạy để kiểm tra và tái tạo |
+| `methodology.md` | Công thức, giả định, cách diễn giải |
+
+Hai thư mục `src/data/` và `data/` khác nhau: một bên chứa **mã xử lý**, một bên chứa **dữ liệu**.
+
+Mỗi lần chạy lưu:
+
+- `request.json`: người dùng đã chọn gì.
+- `validation.json`: dữ liệu có vấn đề gì.
+- `analysis.json`: kết quả tính toán và nhận định.
+- `report.pdf`: báo cáo xuất ra.
+
+Cách này giúp giải thích một báo cáo được tạo từ đầu vào nào và vì sao có kết quả đó.
+
+Nếu thời gian rất gấp, có thể gộp các file nhỏ. **Không cần tạo nhiều file rỗng chỉ để cây thư mục trông đầy đủ.**
+
+**9. Trình tự triển khai tối ưu**
+
+Mình đề xuất làm theo thứ tự sau:
+
+| Bước | Công việc | Điều kiện hoàn thành |
+|---|---|---|
+| 1 | Chọn một mã, chuẩn bị dữ liệu có nguồn | Đọc được giá, tài chính và vài tin liên quan |
+| 2 | Tạo luồng xuất PDF tối thiểu | Nhập mã → đọc dữ liệu → tính một số chỉ tiêu → xuất PDF |
+| 3 | Chuẩn hóa và kiểm tra | Đơn vị, kỳ, phạm vi báo cáo đúng |
+| 4 | Bổ sung phân tích | Giá, tài chính, cơ hội và rủi ro |
+| 5 | Thêm lựa chọn người dùng | Nội dung PDF thay đổi đúng lựa chọn |
+| 6 | Thử mã khác và lỗi dữ liệu | Không cố định số liệu, không bị lỗi khi thiếu dữ liệu |
+| 7 | Làm đẹp và đóng gói | PDF rõ ràng, có README, báo cáo mẫu, demo |
+
+**Nên làm PDF từ sớm.** Nếu để cuối cùng, nhóm có thể hoàn thành phân tích nhưng mắc ở font tiếng Việt, bảng tràn trang hoặc biểu đồ không xuất được.
+
+Với khoảng thời gian từ lúc gửi yêu cầu đến hạn nộp, có thể chia khoảng **140 phút** như sau:
+
+| Thời lượng | Mục tiêu |
+|---|---|
+| 20 phút | Chốt phạm vi và kiểm tra dữ liệu một mã |
+| 35 phút | Hoàn thành luồng phân tích và xuất PDF tối thiểu |
+| 25 phút | Kiểm tra số liệu và bổ sung nhận định |
+| 20 phút | Hoàn thiện giao diện và lựa chọn báo cáo |
+| 20 phút | Thử mã khác, sửa lỗi, kiểm tra PDF |
+| 20 phút | Viết hướng dẫn, quay demo, đóng gói |
+
+Nếu có nhiều thành viên, có thể phân công:
+
+| Vai trò | Phần phụ trách |
+|---|---|
+| Dữ liệu | Nguồn, chuẩn hóa, kiểm tra |
+| Phân tích | Công thức, định giá, nhận định |
+| Giao diện và PDF | Input, biểu đồ, báo cáo |
+| Tích hợp | Ghép mô-đun, thử nghiệm, tài liệu và demo |
+
+Ngay từ đầu phải thống nhất cấu trúc dữ liệu và `analysis.json`, để các phần ghép được với nhau.
+
+**10. Kiểm tra gì trước khi nộp?**
+
+Ưu tiên các kiểm tra có khả năng phát hiện lỗi thật:
+
+- Đối chiếu một số số liệu trọng yếu với báo cáo gốc.
+- Kiểm tra chuyển đổi nghìn/triệu/tỷ đồng.
+- Kiểm tra quý lũy kế và TTM.
+- Kiểm tra lợi nhuận âm, mẫu số bằng 0 và dữ liệu thiếu.
+- Đổi mã cổ phiếu và xác nhận kết quả thay đổi.
+- Đổi giả định định giá và xác nhận kết quả cập nhật.
+- Bỏ một phần báo cáo và xác nhận PDF bỏ đúng phần đó.
+- Xác nhận số trên giao diện khớp PDF.
+- Mở PDF để kiểm tra tiếng Việt, bảng, biểu đồ, số trang và nguồn.
+- Chạy lại chương trình theo README trên môi trường mới nếu có thể.
+
+Bộ nộp mình đề xuất gồm:
+
+1. Mã nguồn và danh sách thư viện.
+2. Hướng dẫn cài đặt, chạy và sử dụng.
+3. Dữ liệu mẫu có nguồn để chạy lại.
+4. Một báo cáo PDF mẫu.
+5. Tài liệu phương pháp và kiến trúc.
+6. Video demo ngắn nếu hình thức nộp cho phép.
+
+**Ưu tiên thực hiện ngay: dữ liệu kiểm chứng được → luồng chạy và xuất PDF → nhận định có căn cứ → tùy chọn người dùng → điểm sáng tạo.** Đây là thứ tự bám sát đề và giảm nguy cơ đến hạn mà sản phẩm vẫn chưa vận hành được.

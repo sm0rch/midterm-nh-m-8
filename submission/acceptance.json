@@ -1,0 +1,161 @@
+{
+  "offline_tests": 26,
+  "ui_evidence": "submission/ui_check.json",
+  "cli_verified": true,
+  "runs": [
+    {
+      "ticker": "HPG",
+      "run_id": "HPG_20261009_123438_937834",
+      "status": "analyzed",
+      "price_records": 261,
+      "latest_date": "2026-10-08",
+      "price_check": "matched",
+      "checked_price_sessions": 20,
+      "mismatched_sessions": [],
+      "financial_check": {
+        "status": "matched_selected_fields",
+        "checks": [
+          {
+            "metric": "revenue",
+            "period": "2025",
+            "actual_billion_vnd": 156116.094618,
+            "reference_billion_vnd": 156116,
+            "match": true,
+            "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf",
+            "locator": "1.5 Tóm tắt các chỉ số tài chính"
+          },
+          {
+            "metric": "net_profit",
+            "period": "2025",
+            "actual_billion_vnd": 15514.931572,
+            "reference_billion_vnd": 15515,
+            "match": true,
+            "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf",
+            "locator": "1.5 Tóm tắt các chỉ số tài chính"
+          },
+          {
+            "metric": "assets",
+            "period": "2025",
+            "actual_billion_vnd": 257899.200818,
+            "reference_billion_vnd": 257899.200817547,
+            "match": true,
+            "source_id": "HPG_9a2881a88ac8ca4c",
+            "locator": "BCTC bán niên, cột đầu kỳ, trang PDF 10"
+          },
+          {
+            "metric": "equity",
+            "period": "2025",
+            "actual_billion_vnd": 131220.010877,
+            "reference_billion_vnd": 131220.010876575,
+            "match": true,
+            "source_id": "HPG_9a2881a88ac8ca4c",
+            "locator": "BCTC bán niên, cột đầu kỳ, trang PDF 11"
+          },
+          {
+            "metric": "liabilities",
+            "period": "2025",
+            "actual_billion_vnd": 126679.189941,
+            "reference_billion_vnd": 126679.189940972,
+            "match": true,
+            "source_id": "HPG_9a2881a88ac8ca4c",
+            "locator": "BCTC bán niên, cột đầu kỳ, trang PDF 11"
+          }
+        ],
+        "note": "Chỉ đối chiếu các chỉ tiêu được liệt kê; không chứng nhận mọi số liệu hay toàn bộ lịch sử."
+      },
+      "interim_valid": true,
+      "valuation_available": true,
+      "pdf": "outputs/pdf/HPG_report.pdf",
+      "pdf_pages": 5,
+      "evidence": "submission/evidence/HPG_analysis.json",
+      "errors": []
+    },
+    {
+      "ticker": "FPT",
+      "run_id": "FPT_20261009_123442_874338",
+      "status": "partial",
+      "price_records": 261,
+      "latest_date": "2026-10-08",
+      "price_check": "unverified",
+      "checked_price_sessions": 20,
+      "mismatched_sessions": [
+        {
+          "date": "2026-09-21",
+          "yahoo_close": 65181.81640625,
+          "kbs_close": 66400,
+          "relative_difference": 0.018346138460090363,
+          "match": false
+        },
+        {
+          "date": "2026-09-22",
+          "yahoo_close": 66400.0,
+          "kbs_close": 66600,
+          "relative_difference": 0.003003003003003003,
+          "match": false
+        }
+      ],
+      "financial_check": {
+        "status": "matched_selected_fields",
+        "checks": [
+          {
+            "metric": "revenue",
+            "period": "2025",
+            "actual_billion_vnd": 70112.825101,
+            "reference_billion_vnd": 70113,
+            "match": true,
+            "url": "https://fpt.com/-/media/project/fpt-corporation/fpt/ir/information-disclosures/year-report/2026/april/20260408-fpt-bao-cao-thuong-nien_web.pdf",
+            "locator": "Dấu ấn 2025 / Con số nổi bật"
+          },
+          {
+            "metric": "net_profit",
+            "period": "2025",
+            "actual_billion_vnd": 11232.339451,
+            "reference_billion_vnd": 11232,
+            "match": true,
+            "url": "https://fpt.com/-/media/project/fpt-corporation/fpt/ir/information-disclosures/year-report/2026/april/20260408-fpt-bao-cao-thuong-nien_web.pdf",
+            "locator": "Dấu ấn 2025 / Con số nổi bật"
+          }
+        ],
+        "note": "Chỉ đối chiếu các chỉ tiêu được liệt kê; không chứng nhận mọi số liệu hay toàn bộ lịch sử."
+      },
+      "interim_valid": null,
+      "valuation_available": false,
+      "pdf": "outputs/pdf/FPT_report.pdf",
+      "pdf_pages": 4,
+      "evidence": "submission/evidence/FPT_analysis.json",
+      "errors": []
+    },
+    {
+      "ticker": "VNM",
+      "run_id": "VNM_20261009_123445_264055",
+      "status": "analyzed",
+      "price_records": 261,
+      "latest_date": "2026-10-08",
+      "price_check": "matched",
+      "checked_price_sessions": 20,
+      "mismatched_sessions": [],
+      "financial_check": {
+        "status": "matched_selected_fields",
+        "checks": [
+          {
+            "metric": "net_profit",
+            "period": "2025",
+            "actual_billion_vnd": 9413.589732,
+            "reference_billion_vnd": 9414,
+            "match": true,
+            "url": "https://static2.vietstock.vn/data/HOSE/2025/BCTN/VN/VNM_Baocaothuongnien_2025.pdf",
+            "locator": "Báo cáo HĐQT / Đánh giá kết quả kinh doanh"
+          }
+        ],
+        "note": "Chỉ đối chiếu các chỉ tiêu được liệt kê; không chứng nhận mọi số liệu hay toàn bộ lịch sử."
+      },
+      "interim_valid": null,
+      "valuation_available": true,
+      "pdf": "outputs/pdf/VNM_report.pdf",
+      "pdf_pages": 4,
+      "evidence": "submission/evidence/VNM_analysis.json",
+      "errors": []
+    }
+  ],
+  "note": "Selected financial figures only; not certification of all data or all stocks."
+}

@@ -1,0 +1,14 @@
+# Design requirements; rule execution has not been implemented.
+validation:
+  preserve_missing_values: true
+  allow_mixed_statement_scope: false
+  require_publication_date_for_historical_analysis: true
+  zero_denominator: undefined
+market:
+  moving_average_windows: [20, 50]
+financial:
+  ttm_flow_metrics_only: true
+  convert_cumulative_to_standalone_quarters: true
+valuation:
+  require_positive_eps_for_pe: true
+  require_comparable_periods: true

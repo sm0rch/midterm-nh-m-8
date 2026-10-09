@@ -1,0 +1,18 @@
+{
+  "ticker": "HPG",
+  "run_id": "HPG_20261009_122131_869845",
+  "exceptions": [],
+  "price_records": 261,
+  "report_exists": true,
+  "interim_ocr_valid": true,
+  "selected_pdf_check": true,
+  "selected_ticker": "FPT",
+  "sections": [
+    "market",
+    "financial",
+    "risks"
+  ],
+  "mode": "summary",
+  "fpt_valuation_blocked": true,
+  "invalid_request_clears_previous_result": true
+}

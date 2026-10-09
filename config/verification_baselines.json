@@ -1,0 +1,6 @@
+{
+  "note": "Selected 2025 figures read from issuer annual reports, rounded to billion VND. These are cross-check baselines, not the application's input financial dataset.",
+  "HPG": {"year": 2025, "values_billion_vnd": {"revenue": 156116, "net_profit": 15515}, "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-2025-1.pdf", "locator": "1.5 Tóm tắt các chỉ số tài chính", "tolerance_billion_vnd": 1},
+  "FPT": {"year": 2025, "values_billion_vnd": {"revenue": 70113, "net_profit": 11232}, "url": "https://fpt.com/-/media/project/fpt-corporation/fpt/ir/information-disclosures/year-report/2026/april/20260408-fpt-bao-cao-thuong-nien_web.pdf", "locator": "Dấu ấn 2025 / Con số nổi bật", "tolerance_billion_vnd": 1},
+  "VNM": {"year": 2025, "values_billion_vnd": {"net_profit": 9414}, "url": "https://static2.vietstock.vn/data/HOSE/2025/BCTN/VN/VNM_Baocaothuongnien_2025.pdf", "locator": "Báo cáo HĐQT / Đánh giá kết quả kinh doanh", "tolerance_billion_vnd": 1}
+}

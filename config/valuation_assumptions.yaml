@@ -1,0 +1,9 @@
+# No market assumptions are supplied at scaffold stage.
+valuation:
+  enabled: false
+  method: null
+  forecast_eps: null
+  target_pe: null
+  target_pb: null
+  horizon_months: null
+  assumption_source: null

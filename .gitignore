@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.env
+.vendor/
+tmp/
+outputs/runs/*
+!outputs/runs/.gitkeep
+# Source snapshots and OCR caches are produced on demand; existing tracked examples remain.
+data/raw/**/*
+!data/raw/**/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+outputs/pdf/charts/

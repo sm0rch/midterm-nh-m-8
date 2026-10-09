@@ -1,0 +1,21 @@
+# Architecture reference; runtime request defaults are in models.py/app.py.
+project:
+  name: StockInsight
+  timezone: Asia/Saigon
+  language: vi
+  stage: implemented
+paths:
+  raw_data: data/raw
+  processed_data: data/processed
+  source_registry: data/metadata/source_registry.csv
+  runs: outputs/runs
+  fonts: assets/fonts
+data:
+  price_unit: VND_per_share
+  financial_unit: VND
+  verified_tickers: [HPG, FPT, VNM]
+  verified_industry_groups: [nonfinancial]
+report:
+  default_mode: full
+  optional_sections: [overview, market, financial, valuation, news, risks]
+  required_sections: [methodology, sources, data_status]
